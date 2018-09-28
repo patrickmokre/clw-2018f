@@ -1,0 +1,317 @@
+---
+title: 'Workshop 3: Writing Up Reports with RMarkdown'
+author: "Patrick Mokre"
+subtitle: Computer Language Workshop, Fall 2018
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+bibliography: clw-fall2018-examplebib.bib
+---
+      
+# RMarkdown
+
+When you work with data, the probability is relatively high (and your advanced econometrics class can help you find out how high) that you want to present your findings at some point. In most places, like your Advanced Econometrics class, it is frowned upon to just send your code somewhere. Instead, you will be asked to hand in .PDF files, or HTML notebooks, or Word files.
+
+The main advantage of RMarkdown is that if you include all your code, they are fully reproducible. Teaching Assistants and graders of your work will like this feature. But even if you omit your code, *inline* coding allows you to include the results of your actual comptations instead of exporting them, which in turn means that you are flexible in updating results.
+
+RMarkdown is RStudios solution to these requirements. It allows you to write and run code within a document, and include R variable values in the text. You will need to download the packages *stringi*, *rmarkdown* and *tinytex* and activate them using the *package()* command.
+
+# Metadata (Header)
+
+Start your document by defining Title, Author, and the format of your document. The title section starts and ends with three dashes *---*.
+
+```
+--- 
+title: "Report"
+subtitle: "Your Class"
+author: "Your Name"
+date: 'September 2018'
+output: pdf_document
+---
+```
+
+In this workshop, we will deal only with PDF output and R input. Note however that RMarkdown can create beautiful Notebooks (i.e. documents where the user can execute code themselves), HTML websites (like the workshop handouts, but more fancy), and so on. Also, RMarkdown is able to include many coding languages, such as Python.
+
+# Inline Formatting
+
+For basic text formatting we use RMD's own 'mark-up' language. You might have notices how RMarkdown is a clever take on the essence of mark-up languages.
+
+You can start sections (i.e. title formatted text) by starting a new paragraph with a pound sign *#*. Double- and triple-pound signs denote subsections and subsubsections.
+
+```{}
+# Section Title
+## Subsection Title
+### Subsubsection Title
+```
+
+If you want your sections numbered, add ```sections_numbered``` to your header metdata.
+
+```
+--- 
+title: "Report"
+subtitle: "Your Class"
+author: "Your Name"
+date: 'September 2018'
+output:
+  pdf_document:
+    number_sections: TRUE
+---
+```
+
+
+Further basic mark-up commands give you **bold**, *italic*, ~subscript~ and ^superscript^ scored text. Use double-asterisks ```**``` for bold text, ```_``` underscores for italic text, single asterisks ```*``` for bold italic text, tildes ```~``` for subscript and carets ```^``` (before and after) produce superscript.
+
+You can easily include *hyperlinks* with the following syntax: ```[Link Text](Link adress)``` and include images by typing ```![Image Text](Image/Path)```.
+
+You can also use RMD mark-up code to create ordered an not-ordered lists. For ordered lists, just number the single elements:
+
+```{}
+1. First element
+2. Second Element
+3. Third Element
+```
+
+Use asterisks ```*```, plus signs ```+``` or minus signs ```-``` for unordered list elements
+
+```{}
+* One item
+* A second item
+* A third item
+```
+
+Use TABSTOP to create sub-lists. You can easily combine ordered and unordered lists.
+
+```{}
+1. First element
+2. Second Element
+  * First unordered
+  * Second unordered
+```
+
+# LATEX formatting
+
+For more complicated formatting options, you can just use LATEX mark-up commands. You can do that either inline by putting your code between Dollar signs ```$``` or by just typing LATEX commands in their own paragraphs. LATEX is incredibly powerful in formatting text, however, we will only deal with *greek symbols*, *fractions*, *equations* and *matrices* for now. In general, LATEX commands begin with a backslash ```\``` and then the command name. There is enough LATEX documentations available online for you not to memorize LATEX commands.
+
+Greek letters can be included by just combining a bakslash with the name of the greek letter. You can look these up in every LATEX compendium. I also have a handy image that was the first result when I typed "LATEX greek letters" into Google's image search. For example, ```$\lambda$``` compiles to $\lambda$. Within the dollar signs ```$``` you need to use LATEX coding for subscript and superscript by typing ```_{subscript}``` and ```^{superscript}```. So ```$\eta_{t}^{2}$``` compiles to $\eta_{t}^{2}$.
+
+A fraction is put into the ```$\frac{NUM}{DEN}$``` command, where the first curly brackets hold the numerator, and the second one the denominator. This would compile to $\frac{DEN}{NUM}$. RStudio even provides with a handy preview in your coding window when you mouse roll-over the code.
+
+An equation can just be put into its own paragraph, the beginning being denoted with ```\begin{equation}```, the end by ```\end{equation}```. Typing an asterisk at the end of the command, ```equation*``` gives you an unnumbered equation. You can put LATEX code blocks in double-dollar signs ```$$```, but it will generally compile even outside these.
+
+\begin{equation}
+r = \frac{m}{c + v}
+\end{equation}
+
+A matrix in LATEX is constructed by using either *array*, *bmatrix* or *pmatrix* (the differences are the brackets). An and sign ```$``` denotes a new element, a double backslash ```\\``` denotes a linebreak (next line).
+
+```{r eval=FALSE}
+$$ a =
+\begin{array}{cc}
+a_{1,1} & a_{1,2} \\
+a_{2,1} & a_{2,2} 
+\end{array}
+$$
+```
+
+$$
+a =
+\begin{array}{cc}
+a_{1,1} & a_{1,2} \\
+a_{2,1} & a_{2,2}
+\end{array}
+$$
+
+```{r eval=FALSE}
+$$b =
+\begin{bmatrix}
+b_{1,1} & b_{1,2} \\
+b_{2,1} & b_{2,2}
+\end{bmatrix}
+$$
+```
+
+$$
+b =
+\begin{bmatrix}
+b_{1,1} & b_{1,2} \\
+b_{2,1} & b_{2,2}
+\end{bmatrix}
+$$
+```{r eval=FALSE}
+$$
+c =
+\begin{pmatrix}
+c_{1,1} & c_{1,2} \\
+c_{2,1} & c_{2,2}
+\end{pmatrix}
+$$
+``` 
+
+$$
+c =
+\begin{pmatrix}
+c_{1,1} & c_{1,2} \\
+c_{2,1} & c_{2,2}
+\end{pmatrix}
+$$
+
+# Code Chunks
+
+This is still an R document, and however nice you describe your results, you want to get to these results first. You do this by adding code chunks, either by typing three backward apostrophes and curly brackets ```` ```{} ```` or by pressing CTRL+ALT+I. Inside the curly brackets, you type the language you are using. We will only use R, and RStudio will automatically set your Code to R.
+
+Code chunks are closed by typing three backward-facing apostrophes ```` ``` ````.
+
+In this code chunk, I use pound signs since the handout itself is created with RMarkdown.
+
+```{}
+#```{r}
+#
+#```
+```
+
+Please create your own document, with some title, your author name and have it be compiled to PDF. Then include one codechunk, assign the values 5 and 3 to some variables, and print their sum. Then run the code by pressing CTRL+SHIFT+ENTER in the RMD file. Then compile it to the PDF output, either by clicking on *Knit* or by pressing CTRL+SHIFT+K.
+
+```{r}
+a <- 5
+b <- 3
+sum(a, b)
+```
+
+Please load the file SLID.CSV, and print summary statistics.
+
+```{r}
+slid <- read.csv("SLID.csv")
+summary(slid)
+```
+
+# Inline Variables
+
+As promised, you can just call pre-defined variables inline, i.e. in the text. This allows you to easily update reports by loading new data and re-compiling. As an example, please define a variable ```x``` and assign it the value 5. Then use single backward apostrophes and the indicator ```r``` (like that:``` `r ` ```) to call that value inline.
+
+```{r}
+x <- 5
+```
+
+The value of x is `r x`.
+
+
+# Tables
+
+The summary statistics you printed above are not the most beautiful you can do. Furthermore, some of the information might be unecessary to know. Including unnecessary information is frowned upon by some (e.g. Teaching Assistants who have to grade many Assignemtn Write-Ups). *knitr*'s internal ```kable()``` function however provides you with an intuitive way to print tables in HTML, PDF and so on.
+
+Please print the first 5 lines of SLID.CSV as a somehow nice looking table. Always include an informative and unique caption without putting information from the table into the caption.
+
+```{r}
+knitr::kable(head(slid), caption='First 6 lines regarding income dynamics')
+```
+
+You can look up more formatting options by typing ```?kable()```in your console (after having activated the *knitr* package typing and executing ```library(knitr)```). Notice that your table output will look different depending on the style package you are using, or which format you are exporting too.
+
+# Plots and Figures
+
+Every code chunk you type in without using the qualifier ```eval=FALSE``` will be executed and printed in your output file. For Figures, especially the ones that are a bit more complex to construct using Base R, it makes sense to include the qualifier ```results='asis'```. You can also include more qualifiers in the code chunks curly brackets ```{}```. For Figures, ```fig.width```, ```fig.height```and ```fig.cap``` are essential. Again, always use unique and informative captions for Figures. If you combine multiple plots into one Figure, use Base R's ```main=``` option to distinguish them.
+
+```{r results='asis', fig.cap='Wage and Education'}
+par(mfrow=c(1,2))
+plot(slid$wages,
+     main="Wages",
+     xlab="", ylab="Wages in 1000",
+     pch=16,
+     col="#FF9999")
+plot(slid$education,
+     main="Education",
+     xlab="", ylab="Education in Years",
+     pch=16, col="#99FF99")
+par(mfrow=c(1,1))
+```
+
+# References
+
+For references, RMarkdown is able to make use of the very powerful BibTex format. This is a rather simple, three-step procedure that will store your bibliographic metadata, automatically include references where you want them, create a References block at the end of your document.
+
+First, open a new document and save it as ```bibfile.bib```.
+
+Then, include the following line in your header ```bibliography: bibfile.bib```.
+
+```
+--- 
+title: "Report"
+subtitle: "Your Class"
+author: "Your Name"
+date: 'September 2018'
+output: pdf_document
+bibliography: bibfile.bib
+---
+```
+
+Then, go on Google Scholar and search for an article you want to include as a reference. This is for demonstrational reasons, of course you can use any search engine or none at all in your research. lick on the quotation marks ```"```  below the search results, then click 'BibTex' and copy the resulting text in your own *.bib* file.
+
+```{r, out.width='25%', fig.cap='Finding BibTex fomrat metadata'}
+knitr::include_graphics('scholar1.png')
+knitr::include_graphics('scholar2.png')
+knitr::include_graphics('scholar3.png')
+```
+
+You will notice that every entry has a unique caption, normally by the format ```authoryearfirstword```, e.g. Anwar Shaikhs book will have the caption ```shaikh2016capitalism```. You can now include citations in-line by just typing ```@shaikh2016capitalism```, which compiles to @shaikh2016capitalism. Alternatively ```[@shaikh2016capitalism]``` gives [@shaikh2016capitalism] and ```[-@shaikh2016capitalism]``` suppresses the author name [-@shaikh2016capitalism]. Just include any other text, e.g. page numbers in the square brackets after a comma: ```[@shaikh2016capitalism, p751]``` [@shaikh2016capitalism, p751], or combine citations ```[@shaikh2016capitalism], [@shaikh1980laws]``` giving you [@shaikh2016capitalism], [@shaikh1980laws].
+
+The *pandoc* style for PDF documents RStudio uses by default will just give you all citations that you used as a Reference block at the end of your document. If you want this to have a title (which you normally do), just close your document with ``` #References```. You can also use ```nocite``` in your metadata header to inculde uncited documents. 
+
+# Table of Contents 
+
+Tables of Content are especially nice as navigations in HTML documents. However, even when compiling to a PDF a TOC works as structuring your document and giving an overview at the beginning. Just include the following two lines in your metadata header: ```toc: yes``` and ```toc_depth: '2'```. It should then look like the following:
+
+```
+---
+title: "Report"
+subtitle: "Your Class"
+author: "Your Name"
+date: 'September 2018'
+output: 
+  pdf_document:
+      toc: yes
+      toc_depth: '2'
+bibliography: bibfile.bib
+---
+```
+# Extract pure R code
+
+To extract all R code from an RMarkdown file you can use the package *knitr*'s ```purl()``` function. Make sure you have *knitr* installed and activated, and your working directory set, so that you can easily find the R output.
+
+```{r, eval=FALSE}
+install.packages('knitr')
+library('knitr')
+setwd('C/User/Documents/R/RMD')
+purl('filename.rmd')
+```
+
+
+# Troubleshooting
+
+For some reason, the newest installation of RMarkdown is not working for all users when knitting to PDF. If you run into this problem, try (one by one) the following code lines.
+
+First try updating all your packages. Naturally, check if *rmarkdown*, *stringi* and *tinytex* are installed and work well.
+
+```{r eval=FALSE}
+update.packages(ask=FALSE)
+```
+
+The following is a temporary, bad fix, however, some users on the web report it is the only solution they have found so far. It includes downgrading to RMarkdown 1.8 and using MikTex, not tinytex, as a PDF compiler. In general, 'downdating' your software is a bad idea.
+
+```{r eval=FALSE}
+install.packages('devtools')
+devtools::install_version('rmarkdown', version = '1.8')
+```
+
+You also might have to update your MikTex installation and manually install/update the *fancyvrb* package.
+
+# Further Reading and Practice
+
+https://rmarkdown.rstudio.com/lesson-1.html
+https://bookdown.org/yihui/rmarkdown/
+
+# References

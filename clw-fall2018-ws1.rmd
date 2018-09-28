@@ -1,0 +1,342 @@
+---
+title: 'Workshop 1: RStudio, Basic R, and Data'
+author: "Patrick Mokre"
+subtitle: Computer Language Workshop, Fall 2018
+output:
+  pdf_document:
+    numer_sections: TRUE
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+# Why R?
+
+R is a software package which is mostly used for statistical purposes. It allows you to run simple and complicated operations by using its own input language, on which this class is going to focus on. There are many statistical software packages out there, some are specialized to cater specific professions, some are more general. Popular examples are STATA and SPSS.
+
+R is freeware and open source. This has two main advantages for you: You do not need to pay for it, and there is a lively community developing specialized packages that allow you to use other peoples' work routines instead of re-inventing the wheel over and over again. The R community offers tutorials and platforms that make learning easy, and if you want to, free.
+
+Furthermore, many economists already use R, which makes it easy for you to replicate data, or ask other researchers for their code if you are stuck. However, it is not the single dominant software package used in economics and econometrics.
+
+The input language in R is relatively intuitive and at the same time, relatively close to the operations R is asking your computer to perform. This means that understanding statistics in R will make it easier for you to learn a more specialized software package than the other way around.
+
+# RStudio
+        
+RStudio is one environment in which you can write and run code in the R language. It also allows plotting, loading data, and choosing different types of output for your projects. There is many other ways to use R, however, in this workshop series we will work within RStudio.
+
+Thus, your first step is to download RStudio from www.rstudio.com
+
+Once you have opened RStudio, open a new file by pressing CTRL + SHIFT + N. Save the file by pressing CTRL + S.
+
+Now familiarize yourself with the five components of your screen: 
+* The Top Bar has the menu, some quick functions, and a tab structure if you want to open multiple files at once. 
+* The top left part is your code window, where you can open, edit, run, and save your R code files. 
+* The top right part gives you the global environment where you can see all objects you have assigned. You can see the history of your edits here by switching tabs.
+* On the bottom left you find the console, where you can quickly run R code. Some packages use that window to mark there progress when doing longer calculations.
+* The bottom right is where your plots will be shown. You can also access packages, files, and the help window there.
+
+# Objects and Operations
+
+RStudio will do all operations for you that it understands. For it to understand you, you need to speak its language: R. R is a very intuitive language without too many rules, especially for simple operations. However, there is conventions on how to write R code, which make it easier for other users to understand and adapt your code; it increases efficiency and neatness; and lastly when your code gets more complicated staying true to convention may help avoid bugs. *This might also be superstition.*
+
+When it comes to simple mathematical operations, R is very intuitive. To run an operation (one line of code) press CTRL + SHIFT + ENTER.
+
+```{r}
+3 + 4
+4 * 4
+5 ^ 2
+```
+*Which other operators come to mind?*
+
+For operations a bit more difficult, we use functions. Base R is the backbone of the language, it is the functions that we can use without loading or activating additional packages. We will not waste our time by memorizing functions. The ones you need a lot you will remember at some point, for everything else, there is online resources. Familiarize yourself with the tutorial on https://www.statmethods.net/r-tutorial , and the package repository https://cran.r-project.com .
+
+Later today you will learn to use functions from outside Base R, and later this term you will start to write your own functions.
+
+
+```{r}
+log(3)
+sum(3,4,5)
+```
+
+You will want to store data, routines and more in R. You do that by assigning values to objects. There is three different ways to work with equalities in R: Assigning, setting, and comparing. While they sometimes have the same result, you will want to be careful about which you use. <- assigns value(s) to an object.
+
+```{r}
+a <- 4
+```
+
+You can access the object by writing its name. It will also be visible in the Environment window.
+
+```{r}
+a
+``` 
+
+We can also use = to set values, mostly in functions, and == to compare them. = will tell R to run a function with certain specifications (we will get to this), == is a logical operator among many that gives you a TRUE/FALSE answer.
+
+* Assign values to variables *a* and *b*. 
+* Calculate the sum and product, subtract b from a, and divide b by a.
+* Calculate a to the power of b
+* calculate the sum of the logarithms of a and b.
+
+You can remove all objects using the *rm()* command. If you want to empty your environment, use *list=ls()* as input for the function.
+
+```{r}
+rm(a)
+rm(list=ls())
+```
+
+R has different objects in which data is stored. Some of the most important for applied work are *vectors*, *matrices*, *data frames* and *lists*. While the first two might be self-explanatory, a data frame is a two-dimensional structure to store data (like a table) for which R provides a lot of useful commands. A list is essentially an array of whatever objects you want to store - for example two data frames, one variable, and one vector.
+
+```{r}
+vector1 <- c() # an empty vector
+vector1[1] <- 2
+vector1[2] <- 3
+print(vector1)
+```
+
+```{r}
+mat1 <- matrix(NA,
+               nrow=2,
+               ncol=2)
+print(mat1)
+``` 
+
+You can access and manipulate elements of a matrix by *adressing* it. Adressing in R works the same for almost all types of data stores: All dimensions are indexed from 1 to N, where N is the number of entries in that dimension. In two-dimensional structures, which resemble Tables in books or papers, rows are the first and columns are the second dimension.
+
+```{r}
+mat1[1,1] <- "Top Left"
+mat1[1,2] <- "Top Right"
+mat1[2,1] <- "Bottom Left"
+mat1[2,2] <- "Bottom Right"
+print(mat1)
+```
+
+We can also adress every element by consecutive numbering by using double parentheses. For some reason, R numbers columns consecutively through all rows.
+
+```{r}
+mat1[[2]]
+mat1[[3]]
+```
+
+```{r}
+c1 <- c(1, 2)
+c2 <- c("Rose", "John")
+c3 <- c(160, 180)
+
+df1 <- data.frame("id"=c1,
+                  "name"=c2,
+                  "size"=c3)
+df1
+```
+
+```{r}
+lis1 <- list(c1, c2, c3, 4, mat1)
+lis1
+```
+
+We can access list elements by using double parentheses.
+
+```{r}
+lis1[[1]]
+```
+
+# Packages
+
+R is a non-proprietary software, RStudio is a non-proprietory software package. That makes it easy for people to write and share their own code, which menas that since in many professions exellent researchers and practicioners are working with R, a lot of the complicated things have alreade been done. You can find solutions to existing problems on pages like https://stats.stackexchange.com
+
+Packages institutionalize this culture of contributing to R. They include code not written in R but in 'deeper' coding language. By 'deep' I mean less intuitive, but closer to the internal calculating logic of digital machines, and thus more efficient. There is a variety of packages, which allow you to exceed the limits of base R. MOst packages are saved on the online repository CRAN.
+
+The easiest way to install a package is to click on 'Packages' in the bottom right window, then on 'install' and search for the package on CRAN or another repository. You can activate a package by typing *library(packagename)* in either the Console or the Code window. You need to 'activate' each package you want to use once for every session. Quitting R closes the session, so if you use a package in soe code, it makes sense to activate it at the beginning. Please download and activate the *foreign* library and open the corresponding vignette.
+
+AER is a collection of functions, data sets and tutorials for applied econometrics doing R.
+
+```{r}
+#install.packages('AER')
+#library(AER)
+#vignette("AER")
+```
+
+If you want to study the examples, you can use the *demo()* function as described in the vignette. Please do not do this in class.
+
+For a more learning-oriented approach to introductions in R, RStudio offers built-in, console-based learning with the *swirl()* function. You need to install the swirl package, activate it, and then just type *swirl()* in your Console to start learning Base R on Stastical inference or download more courses from the SWIRL Course Repository: https://github.com/swirldev/swirl_courses#swirl-courses 
+
+Please do not do this in class.
+
+# Loading Data
+
+You should have two files for this class: One .rda file, and one .csv file. RDA is Rs own data storing structure: You can essentially export and import every object you have in the "Environment" window in a RDA file. CSV is a more standard way of storing values.
+
+## R's own .RDA
+
+First, load the RDA file. It contains one of RStudio's own data files for presentation, mtcars. Instead of using the full path structure, use *setwd()* to set the path to your working directory for the whole session. Using *getwd()* you find out which working directory R is currently operating in. If this is where you want your files stored, and have your data stored, you are fine. Otherwise, use the *setwd()* command to change it.
+
+```{r}
+getwd()
+```
+```{r}
+rm(list=ls())
+#setwd()
+load("clw1-data1.rda")
+```
+
+The data in *mtcars* is a single *data.frame()*, R's preferred two-dimensional structure. It is a representation of a Table. You can get a good overview over the structure of your data using the *class()*, *str()* ("structure") and *summary()* commands. If you want a glimpse of your data, you can inspect the first few rows using *head()* and the last few using *tail()*.
+
+```{r}
+class(mtc)
+```
+```{r}
+str(mtc)
+```
+```{r}
+summary(mtc)
+```
+
+Please answer the following few questions using information you get from applying *str()* and *summary()*:
+* How many observations does the data frame contain?
+* How many variables?
+* What data type is used to store the variables?
+* Do you think, there is more appropriate ways to store *vs* or *gear*? Which ones?
+
+By convention, variables are stored in columns, observations are stored in rows of data frames. Check if the first row is variable names. If not, the number of rows very likely coincides with the number of observations, and the number of columns coincides with the number of variables. 
+
+You can access columns of a dataframe using the *$* operator. Alternatively use the square brackets to access dimensions, where the position before the comme denotes the row number, and the one behind the comma denotes the column number: *mtc[rownumber, colnumber]*, or use double square brackets *mtc[[colnumber]]*.
+
+```{r}
+mtc$mpg
+```
+```{r}
+mtc[,1]
+```
+```{r}
+mtc[[1]]
+```
+
+You can easily apply functions to data frames.
+
+```{r}
+mean(mtc$mpg)
+```
+```{r}
+ncol(mtc)
+```
+```{r}
+sd(mtc$mpg)
+```
+
+All values in the mtcars set are stored as numerics. As they contain numbers, this is not inappropriate. However, there is a variety of specialized classes in R. Numerics are good to store continuous variables, but when we inspect *mtc$cyl* we find out describing it as an integer might be more appropriate. Luckily, R offers a relatively easy conversion method. Also, note that you can easily add new columns to your dataframe.
+
+```{r}
+mtc$cylfct <- as.factor(mtc$cyl)
+mtc$cyl
+mtc$cylfct
+```
+Some functions will only allow you to use a special class of data as input. While conversion is not always possible, either logically or coding-wise, it is a useful skill to have. Try to calculate the median number of cylinders using the *median()* function and *cylfct* as input.
+
+```{r}
+# median(mtc$cylfct)
+```
+
+(As this line produces an Error, I have commented it out using the *#* sign. Feel free to run it in R anyhow, it is not going to crash your machine.)
+
+You can however reconvert the variable using *as.numeric*. Do that and reapply the *median()* function.
+
+```{r}
+mtc$cyl2 <- as.numeric(mtc$cylfct)
+```
+
+Check if the reconverted number of cylinders is identical with the original data source. This is important, since inappropriate conversion might produce NAs or other inconsistencies that will distort analysis.
+
+```{r}
+mtc$cyl2 == mtc$cyl
+```
+
+Inspect both columns to find out what the difference is.
+
+```{r}
+class(mtc$cyl)
+class(mtc$cyl2)
+mtc$cyl
+mtc$cyl2
+```
+
+The reconversion from factors with the number of gears as a name to numerics seems to have distorted the factor. Sometimes, there is an easy solution for that. Sometimes, you will have to go back to the original data.
+
+```{r}
+mtc$cyl3 <- mtc$cyl2 + 4
+mtc$cyl3 == mtc$cyl
+```
+
+```{r}
+mtc$cyl4 <- 2 + mtc$cyl2*2
+mtc$cyl4 == mtc$cyl
+```
+
+The result of using the *==* operator is a *Boolean* variable. A Boolean can take values *TRUE* or *FALSE*. YOu can apply the *sum()* and *length()* function to a Boolean and calculate the ratio of observations where equality holds.
+
+```{r}
+equ_3 <- sum(mtc$cyl3==mtc$cyl) / length(mtc$cyl)
+equ_3
+equ_4 <- sum(mtc$cyl4==mtc$cyl) / length(mtc$cyl)
+equ_4
+```
+
+Now that you have reconverted the data succesfully, you can finally calculate the median number of cylinders in the dataset.
+
+```{r}
+median(mtc$cyl4)
+```
+
+## Alternative Formats: .CSV
+
+Most data will not come in R's own .RDA format. One popular form of storing data is .CSV, 'comma separated values'. Please use the *read.csv()* function to load the attached file *SLID.csv*. It contains a representative survey of labor income dynamics. 
+
+You need to use the assign symbol *<-* to store the data in your Workspace. 
+```{r}
+slid <- read.csv("SLID.csv")
+```
+
+* What class of data does R assign to a CSV file that is stored in the object *slid*?
+* How many variables, how many observations*
+
+```{r}
+class(slid)
+```
+```{r}
+str(slid)
+```
+```{r}
+summary(slid)
+```
+
+# Visualizing Data
+
+You can use Base R's plotting functions to win insight into the structure of your data. This is an important step before data cleaning (covered in Class 2) and data analysis (literaly the rest of this course). You will go deeper into the topic of plotting in Class 5.
+
+Let's say, you are an economic student and want to demonstrate the wage/education dynamics.
+
+Start with descriptive visualization of the parameters.
+
+```{r}
+plot(slid$wage)
+```
+```{r}
+plot(slid$education)
+```
+
+In a next step, see if you can visualize the relationship between wages and education.
+
+```{r}
+plot(slid$wages,
+     slid$education)
+```
+
+These plots might have been informative for yourself, however they are hard to read for an outsider. Using *plot()*'s options, you can mke sure that the plot becomes more approachable. Also you can make it not look ugly as hell.
+
+```{r}
+plot(slid$wages, slid$education,
+     bty="l",
+     main="Wage/Education Dynamics",
+     xlab="Wages", ylab="Education",
+     pch=16, col="#DD7777")
+```

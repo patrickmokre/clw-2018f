@@ -1,0 +1,77 @@
+---
+title: "Special Workshop 2: An Intro to the apply() family"
+subtitle: "Computer Language Workshop"
+date: "Fall 2018"
+author: "Patrick Mokre"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+```{r}
+rm(list=ls())
+set.seed(1)
+```
+
+
+In general, when automating workflows in programming, one will use loops and conditions, such as the if() function, ifelse() function, for() and which() loops. While these techniques have their justified existence for their generality, they are computationally very intensive. 
+
+You will have noticed by now that in R, a lot pivots around the data frame format. It is only consequent that there is a family of functions that allow you to automate tasks with special regard to data frames: ```apply()```. Mutations of the function allow you to work with vectors and lists, two other very important data storing objects in R. Since you are working a lot with these data formats, it makes sense to take the time and understand the logic of apply, and correspondingly, *ad hoc functions*, to speed up your workflow.
+
+# lapply()
+
+In most colloquial terms, ```apply()``` performs some predefined operation on every element of a dataframe. For didactical reasons, we will start with the simpler version, ```lapply()``` that does the same for vectors and lists.
+
+Please generate sample data for the following case: 100 students submit four assignments. Each assignment carries a maximum of 25 points. Generate the results for the first assignment using a Gaussian Normal distribution around a mean of 12.5 and a standard deviation of 1.
+
+```{r}
+a1 <- rnorm(100, 12.5, 1)
+```
+
+Please generate the results for the second assignment, for each student taking the result of the first assignment as the mean of a Gaussian normal distribution, again with standard deviation 1. To do this, use ```lapply()``` and define an ad hoc function inputing ```rnorm()```. Note that lapply gives a list, and use the ```unlist()``` function to get your result in vector form.
+
+# Ad hoc functions
+
+You will also learn to use an *ad hoc function* as an input to apply now. It is defined in the same way as any custom function, but has no function name. R forgets about the function (since it is not stored to a function name object) immediately after use. The syntax, using the ```function()``` function only, is: ``` function(x) function_body(x) ```. It returns whatever the result of the function body is. This will allow you to use the first assignment's results as input for the second assignment's distribution.
+
+```{r}
+a2 <- lapply(a1, function(x) rnorm(1, a1, 1))
+a2 <- unlist(a2)
+```
+
+Please use the same method to generate the results of the third assignment, but take the mean of the previous two assignments as the mean of the Gaussian normal function.
+
+# apply()
+
+Now is the time to introduce ```apply()```. It does the same job - applies some pre-defined or custom defined function to every element in a list, only that it lets you take this list from a *data frame*. It does so by requiring one additional argument: row or column, denoted by 1 or 2. If you choose row, a vector of all column entries for each observation will be used as input, and vice versa.
+
+Use apply to generate the results of the third test, again Gaussian Normal distributed, but this time taking the mean of the previous two assignments as input for the mean of the distribution. Use ```cbind()``` to temporarily create a dataframe with two columns corresponding to ```a1``` and ```a2```. Use an ad hoc function to take the mean of the two observations in each row as input to a ```rnorm()``` function.
+
+```{r}
+a3 <- apply(cbind(a1, a2), 1, function(x) rnorm(1, mean(x), 1))
+```
+
+Now create the last vector of results, using the same methodology as for assignment 3, but assume that some students have other classes, while some do not, so increase the standard deviation to 3. Please check if any observations exceed 25 (or go below 0) using indexing of vectors by square brackets ```[]``` and the ```which()``` function. Then create a dataframe using ```cbind()``` which stores all results.
+
+```{r}
+a4 <- apply(cbind(a1, a2, a3), 1, function(x) rnorm(1, mean(x), 3))
+a4[which(a4>25 | a4<0)]
+results <- data.frame(a1, a2, a3, a4)
+```
+
+Now, please use ```apply()``` to calculate the mean results for each assignment over all students. Then, calculate the difference between the first and last assignment in percentages for each student.
+
+```{r}
+mean_points <- apply(results, 2, mean)
+mean_points
+```
+
+```{r}
+results$improvement <- apply(results, 1, function(x) 100*((x[4] - x[1])/x[1]))
+head(results)
+```
+
+
+

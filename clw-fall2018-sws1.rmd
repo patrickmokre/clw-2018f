@@ -1,0 +1,202 @@
+---
+title: "Special Workshop: Macro Modeling Methods in R"
+subtitle: "Computer Language Workshop"
+date: "Fall 2018"
+author: "Patrick Mokre"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+```{r, echo=FALSE}
+rm(list=ls())
+setwd("C:/Users/M/Google Drive/NSSR/2018F/Computer Language Workshop/SWS1")
+library(gEcon)
+```
+
+      
+# R as an alternative to MATLAB?
+
+While R is a well established programming solution to many statistical problems, both descriptive and inferential, for analytical and model-building questions economists often rely on proprietory software, such as MATLAB and MATHEMATICA. It is noteworthy right at the beginning that there is a freeware alternative to MATLAB called OCTAVE, however, users report that not all functionalities are available.
+
+R and MATLAB do essentially have the same specialization in quickly manipulating matrices, and furthermore, R has a huge community of researchers producing specialized packages, amongst others, for economists. Some functionalities of MATLAB that are typical candidates in economics classes, such as solving polynomial equations, and simulating DSGE models, can easily be implemented in R. Note that I am not an expert on macro modeling, and if you want to do applied research, you will probably have to either continue using MATLAB or get into the material less superficial.
+
+David Hiebeler provides a good comparison of MATLAB and R features: http://www.math.umaine.edu/~hiebeler/comp/matlabR.pdf
+
+# Solving Equations
+
+Solving polynomial and differential equations is at the heart of a macroeconomists' trade. Finding real and comple roots of a polynomial can be easily implemented in Base R using the ```polyroot()``` function. The input to the function is a vector of coefficients to the polynomial, starting from the lowest power ($x^0$). Since this is countrintuitive to many who write their equations starting with the highest power, I will use the ```rev()``` function to reverse the order.
+
+Please find the roots of the quadratic polynomial $x^2 - 4 = 0$
+
+```{r}
+v1 <- c(1, 0, -4)
+polyroot(rev(v1))
+```
+You can use the ```uniroot()``` function to find roots for a function $f(x)$ between values $a$ and $b$.
+
+```{r}
+fx <- function(x) {x^2 - x}
+uniroot(fx, c(-1, 1))
+```
+
+Using ad-hoc functions, you can also write:
+
+```{r}
+r2 <- uniroot(function(x) cos(x) - x, lower=-pi, upper=pi)
+r2$root
+```
+
+# Optimization
+
+For function optimization, i.e. finding minima and maxima, use the ```optimize()``` functions with the same input structure as in ```uniroot()```. The default value of the option ```maximum = FALSE``` gives you a minimization problem, but you can easily turn that around. The function gives two parameters as output ```$minimum``` and ```$objective```, where the former is the minimizing value of $x$ and the latter is the minimized function value $x$ (and vice versa for ```maximum=TRUE```).
+
+```{r}
+optimize(function(x) cos(x) - x, c(0,pi)); optimize(function(x) cos(x) - x, c(0,pi), maximum = TRUE)
+```
+```{r}
+x1 <- 3.141513
+print(cos(x1) - x1)
+```
+
+# Eigenvalues and Eigenvectors
+
+Base R also offers numerical solution of a matrices Eigensystem using the ```eigen()``` function, which has a matrix (often a Jacobian is used in macroeconomics) as an input, one vector of eigenvalues and one matrix of eigenvectors as output.
+
+```{r}
+m1 <- matrix(c(2,3,0,-2), 2, 2, byrow=T)
+es <- eigen(m1)
+print(es$values); print(es$vectors)
+```
+
+For analysis of the characteristics of the Eigensystem, the ```crossprod()``` function allows to calculate a corssproduct of vectors.
+
+# Trace and Determinant analysis
+
+The ```matlib``` package allows us to find the Trace (```tr()``` function), determinant (```det()``` function) and rank (```R()``` function) of a system. Locating a system in a Trace-determinant plane allows us to make statements about the stability of the system.
+
+```{r}
+library('matlib')
+print(paste("Trace: ", tr(m1), "Determinant: ", det(m1), "Rank: ", R(m1)))
+```
+
+# gEcon: Solving DSGE models
+
+The gEcon package was developed in the Polish Office of the Prime Chancellor for applied DSGE analysis, so it has been used in actual research in policy making (which, given on which assumptions DSGE models are built, could be concerning to the naive economist). Similar to the DYNARE extension of MATLAB, you declare a model and save the code in a separate file of .gcn format, then run it in R, store the results in an R object and evaluate. The Website gecon.r-forge.r-studio.org provides handy examples, of which I am presenting one, a two-agent pure-exchange economy.
+
+Let two agents A and B have utility functions $U_A$ and $U_B$ in two goods, 1 and 2, initial endowments in these goods $e^{A1}$, $e^{A2}$, $e^{B1}$, $e^{B2}$. There is preference parameters $\psi^A$, $\psi^B$ to be used in the utility function, budget constraints, and an Euler equation $\lambda^{Agent A^1}$.
+
+The model is formulated in http://gecon.r-forge.r-project.org/models/pure_exchange.pdf
+
+The sample .gcn file shows how to implement the model. It has code blocks for output options, for each agent, and for equilibrium conditions.
+
+```{r, eval=FALSE}
+# ###################################################################
+# (c) Chancellery of the Prime Minister 2012-2015                   #
+#                                                                   #
+# Authors: Grzegorz Klima, Anna SowiÅska                            #
+# ###################################################################
+# Pure exchange model
+# ###################################################################
+
+options
+{
+    output logfile = TRUE;
+    output LaTeX = TRUE;
+};
+
+tryreduce
+{
+    e_B1[], e_B2[], e_A1[], e_A2[], p_1[], C_A1[];
+};
+
+block AGENT_A
+{
+    controls
+    {
+        C_A1[], C_A2[];
+    };
+    objective
+    {
+        U_A[] = log(C_A1[]) + psi_A * log(C_A2[]);
+    };
+    constraints
+    {
+        p_1[] * C_A1[] + p_2[] * C_A2[] = p_1[] * e_A1[] + p_2[] * e_A2[];
+    };
+    identities
+    {
+        e_A1[] = e_A1_calibr;
+        e_A2[] = e_A2_calibr;
+    };
+    calibration
+    {
+        psi_A = 1.72;
+    };
+};
+
+block AGENT_B
+{
+    controls
+    {
+        C_B1[], C_B2[];
+    };
+    objective
+    {
+        U_B[] = log(C_B1[]) + psi_B * log(C_B2[]);
+    };
+    constraints
+    {
+        p_1[] * C_B1[] + p_2[] * C_B2[] = p_1[] * e_B1[] + p_2[] * e_B2[];
+    };
+    identities
+    {
+        e_B1[] = e_B1_calibr;
+        e_B2[] = e_B2_calibr;
+    };
+    calibration
+    {
+        psi_B = 2.22;
+    };
+};
+
+block EQUILIBRIUM
+{
+    identities
+    {
+        p_1[] = 1;
+        C_A1[] + C_B1[] = e_A1[] + e_B1[];
+    };
+};
+
+```
+
+Then, using the ```gEcon``` package, you can call this model, set the 'free parameters' and inspect parameter values.
+
+```{r}
+library('gEcon')
+pe <- make_model('pure_exchange.gcn')
+pe <- set_free_par(pe, c(e_A1_calibr = 2,
+                         e_A2_calibr = 0,
+                         e_B1_calibr = 0,
+                         e_B2_calibr = 2))
+get_par_values(pe)
+```
+
+You can then calculate the steady state and store results using ```steady_state()``` and ```get_ss_values()```. If int the latter function you set the ```to.tex``` option to TRUE, the results will be stored in a .tex file.
+
+```{r}
+pe_ss <- steady_state(pe)
+get_ss_values(pe_ss)
+```
+
+The package website offers many more difficult sample models, and a neat comparison of MATLAB and gEcon: http://gecon.r-forge.r-project.org/files/gEconvsDynare.pdf
+On first glance, gEcon seems to be more user-friendly (and, remind you, free), but lacks the features of second-order perturbation, more advanced Bayesian estimation, and second order model estimation.
+
+# Further Reading and Practice
+
+http://www.math.umaine.edu/~hiebeler/comp/matlabR.pdf
+
+http://gecon.r-forge.r-project.org/

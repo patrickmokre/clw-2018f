@@ -1,0 +1,263 @@
+---
+title: 'Workshop 2: Data Manipulation with dplyr'
+author: "Patrick Mokre"
+subtitle: Computer Language Workshop, Fall 2018
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+```{r}
+library(dplyr)
+library(magrittr)
+```
+      
+# DPLYR and Data Frames      
+      
+Dataframes might be the most important form of storing data for economists working with R. DPLYR is a package designed to summarize and transform dataframes. It is very powerful and works faster than Base R commands, which is why we deal with it that early in the course.
+
+One of the most practical things in working with DPLYR is the pipe operator *%>%*. The operator has nothing to do with the data manipulation capacities of the package, but it allows you to turn around the nesting of functions, making more complicated operations more intuitive (as the first operation comes first, as opposed to last), and easier to manage.
+
+For demonstration, please set your working directory using *setwd()* and load the SLID dataframe from the first workshop using *read.csv()* and store it in an object *slid*. 
+
+```{r}
+rm(list=ls())
+getwd()
+setwd("C:/Users/M/Google Drive/NSSR/2018F/Computer Language Workshop/WS2")
+slid <- read.csv("SLID.csv")
+```
+
+Please familiarize yourself with the datset again, using the *str()* and *summary()* functions. Remember from last time, that *read.csv()* gives you a dataframe.
+
+Using the *which()* function, the *is.na()* function and the *mean()* function, please calculate the mean income for all persons that reported any (i.e. where *slid$wages* is not *NA*).
+
+
+*is.na()* gives a Boolean (i.e. *TRUE*/*FALSE* value), which gives the subset of a vector for which some condition applies evaluating *TRUE*/*FALSE* values, and *mean()* takes the arithmetic mean of a vector, it needs numeric input. For demonstration purposes, please try to calculate the mean of all *slid$wages* observations without a qualifier.
+
+```{r}
+mean(slid$wages)
+```
+
+*mean()* needs numerical input data. *NA* values disable its essential functionality, which is calculating an arithmetic mean. To check, please find out if all observations are *NA* using the *sum()* and *length()* functions. USe the *is.na()* functio to check for *NA* observations.
+
+```{r}
+sum(is.na(slid$wages))/length(slid$wages)
+``` 
+
+So, apparently there are about 55 % observations for which we have wage data. Please find their mean.
+
+```{r}
+mean(slid$wages[which(!is.na(slid$wages))])
+```
+
+You immediately see the counter-intuitive structure of Base R when calculating these values. The pipe operator however allows you to turn the logic around. Please install and activate the *dplyr* and *magrittr* packages.
+
+```{r}
+library(magrittr)
+library(dplyr)
+```
+
+The essential DPLYR commands are:
+* *filter()* allows you to select rows
+* *select()* allows you to select observations
+* *arrange()* allows you to re-arrange and order observations
+* *mutate()* creates new columns
+* *summarise()* allows you to apply functions to summarise observations, for example by applying *mean()*
+* *group_by()* allows you to create groups by some common identifier, and then apply analysis to these subsets
+
+# filter(), select(), and summarize()
+
+Please start by using *filter()* and *is.na* to create a dataset that contains only observations where wages were reported. Use the pipe operator *%>%* to create an intuitive workflow. Note that the *!* operator gives you the opposite of a function. *!is.na()* translates to "is not NA".
+
+```{r}
+wages_notna <- slid %>%
+  filter(!is.na(slid$wages))
+```
+
+Please use the *select()* function to reduce the dataframe to wage observations. Note that like most functions, dplyr functions can be used to change a dataframe instead of creating a new one.
+
+```{r}
+wages_notna <- wages_notna %>%
+  select(wages)
+```
+
+Now use the *summarise()* function to reduce the dataframe to one observation, which is the mean of the wages.
+
+```{r}
+mean_wage <- wages_notna %>%
+  summarize(mean(wages))
+```
+
+In a last step, change the class of *mean_wage* to a numeric using *as.numeric()*.
+
+```{r}
+mean_wage <- mean_wage %>%
+  as.numeric()
+```
+
+Now please repeat all that in one operation, making use of the pipe operator.
+
+```{r}
+mean_wage <- slid %>%
+  filter(!is.na(slid$wages)) %>%
+  select(wages) %>%
+  summarize(mean(wages)) %>%
+  as.numeric()
+```
+
+Please use the pipe operator *%>%*, *filter()* and *!is.na()* and *mean()* to find the mean wage of all observations that reported any wage.
+
+# group_by() and mutate()
+
+Please use *group_by()* to find the mean wages for both men and women. First find out, which class the reported sex is stored in the dataframe.
+
+```{r}
+class(slid$sex)
+```
+
+```{r}
+wages_sex <- slid %>%
+  filter(!is.na(wages)) %>%
+  group_by(sex) %>%
+  summarize(mean_wage = mean(wages))
+wages_sex
+```
+
+Please do the same for the spoken language. Also calculate the number of observations for each group.
+
+```{r}
+wages_language <- slid %>%
+  filter(!is.na(wages)) %>%
+  group_by(language) %>%
+  summarize(mean_wage = mean(wages),
+            n_obs = n())
+wages_language
+```
+
+Please use these functions to calculate the mean deviation for every observation's wage from the mean wage for the sex they reported.
+
+```{r}
+slid_2 <- slid %>%
+  filter(!is.na(wages)) %>%
+  group_by(sex) %>%
+  mutate(mean_wage = mean(wages),
+         dev_wage = wages - mean_wage) %>%
+  ungroup()
+head(slid_2)
+```
+
+Let us assume for a moment that the data is not for the US, and thus, some retirement system is in place. Filter only observations from the working age population, i.e. ages 18 to 65.
+
+```{r}
+slid_age <- slid %>%
+  filter(!is.na(age) & age >= 18 & age <=65)
+summary(slid_age)
+```
+
+# arrange()
+
+Please use *arrange()* to order the data from lowest to highest education. First, remove all observations where no education was reported.
+
+```{r}
+slid_3 <- slid %>%
+  filter(!is.na(education)) %>%
+  arrange(education)
+head(slid_3)
+tail(slid_3)
+```
+
+Using *desc()* you can arrange in descending order:
+
+```{r}
+slid_4 <- slid %>%
+  filter(!is.na(wages)) %>%
+  arrange(desc(wages))
+head(slid_4)
+tail(slid_4)
+```
+
+# distinct()
+
+The *distinct()* function should give us the same results as the Base R *unique()*. However, it should be a lot faster, especially with large datasets.
+
+```{r}
+edu_uni <- unique(slid$education[which(!is.na(slid$education))])
+edu_dis <- slid %>%
+  filter(!is.na(education)) %>%
+  distinct(education)
+sum(edu_uni == edu_dis)/length(edu_uni)
+```
+
+# sample_n() and sample_frac()
+DPLYR also offers random subsampling, i.e. taking a random sample from the population of observations. *sample_n()* gives you some number of observations, *sample_frac()* a fraction of the original dataset.
+
+```{r}
+rep_sample <- slid %>%
+  filter(!is.na(wages)) %>%
+  sample_n(100)
+mean_wage_rep <- rep_sample %>%
+  summarize(mean(wages)) %>%
+  as.numeric()
+mean_wage_rep
+```
+Compare this with the first moment of wages in the whole population (i.e. the arithmetic mean), and the standard deviation. Calculate the deviation of the means in units of standard deviations of the whole population.
+
+```{r}
+paste("Mean: ", mean_wage, " SD: ", sd(wages_notna[,1]), " Deviation in SDs: ", abs((mean_wage_rep - mean_wage)/sd(wages_notna[,1])))
+```
+
+# Joining Tables
+
+You will encounter situations when you want to merge different datasets that describe the same data, but from different points of view. Base R provides some functions for it, however, again DPLYR provides computationally superior functions.
+
+DPLYR provides different join functions:
+* inner_join() 
+* semi_join()
+* anti_join()
+
+For demonstration reasons, we will perform a rather simple operation. Lets assume that the original datset SLID and the dataset we constructed on our own, wages_language, come from different source. Lets furthermore assume we want to include the mean wage for each group (i.e. language reported) to the initial table. For comparison reason, please omit the mean wage for observation which have not reported a language by deleting the fourth row of wages_language.
+
+```{r}
+wages_language <- wages_language[1:3,]
+slid_5 <- inner_join(slid, wages_language)
+head(slid_5)
+```
+
+*semi_join()* is a filtering join. When we apply it to slid and wages_language, it returns all values from slid where we have observations in wages_language
+
+```{r}
+slid_6 <- semi_join(slid, wages_language)
+head(slid_6)
+```
+
+*left_join()* adds all rows of slid with all rows of wage_language. When no language is reported, the mean_wage column returns NA
+
+```{r}
+slid_7 <- left_join(slid, wages_language)
+slid_7 %>% filter(is.na(language))
+```
+
+*anti_join()* is another filtering join, which returns all rows from slid where R cannot find matching values in wages_language. It is the opposite of left_join()
+
+```{r}
+slid_8 <- anti_join(slid, wages_language)
+head(slid_8)
+```
+
+*inner_join()* works both ways.
+
+```{r}
+slid_9 <- inner_join(wages_language, slid)
+head(slid_9)
+```
+
+# Further Reading and Practice
+
+http://genomicsclass.github.io/book/pages/dplyr_tutorial.html
+
+http://stat545.com/bit001_dplyr-cheatsheet.html
