@@ -1,0 +1,245 @@
+---
+title: 'Workshop 4: Advanced Data Cleaning with grep(), gsub() and user-defined functions'
+author: "Patrick Mokre"
+subtitle: Computer Language Workshop, Fall 2018
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+---
+
+# Functions
+
+## General structure
+
+A function is defined and assigned to a name using ```<-```. It consists of a function *name*, *arguments*, and a *body* which returns a *result*.
+
+```{r eval=FALSE}
+function.name <- function(function.arguments){
+  function.result <- any.function(function.arguments)
+  return(function.result)
+}
+```
+
+Very short functions (e.g. the ones performing only one operation) can omit the ```return()``` command:
+
+```{r eval=FALSE}
+function.name <- function(function.arguments) {any.function(function.arguments)}
+```
+
+In general ```functions.arguments``` can be any vector of arguments. To simplify using your functions, you can give the arguments names, and denote them in variable form:
+
+```{r eval=FALSE}
+function.name <- function(function.argument1, function.argument2){
+  function.result <- any.function(function.argument1, function.argument2)
+  return(function.result)
+}
+```
+
+A function is called by just typing the ```function.name``` and setting the ```function.arguments```.
+
+## Function-writing conventions
+
+https://nicercode.github.io instructs us to follow these three conventions:
+
+* Write short functions (and, if necessary, combine them in a *modular approach*)
+* Make functions perform a single operation (will make debugging easier, and your functions more generally applicable)
+* Use intuitive names
+
+As usual, please try to put spaces between objects and operators, put spaces atfer commas, and don't be afraid to include a linebreak when using many arguments of a function. Remember, you will re-use your code, and you will have a hard time understanding what was going on there.
+
+# Example: Laplace Distribution
+
+For some reason, while Base R offers solutions for many standard distribution families, it does not for the *double-exponential* or Laplace distribution. If one does not want to install a package for that, you can easily write such a function on your own, keeping in mind that a Laplace distribution has parameters (arguments) location $\lambda$ and scale $b$ and the probability density function is defined as $f(x) = \frac{1}{2b} exp \left( - \frac{| \mu - x |}{b}\right)$.
+
+Use functions ```abs()``` to find the absolute value of any number and ```exp()``` for the exponential function in Base R.
+
+```{r}
+dlaplace <- function(x, mu, b){
+  fx <- (1 / 2 * b) * exp( - (abs(mu - x))/(b))
+  return(fx)
+}
+```
+
+Now visually inspect the result of your work. Use ```seq()``` to define a domain with arguments minimum value, maximum value, and step size. Then apply ```dlaplace()``` to find the PDF f(x) for arbitrary parameters.
+
+```{r}
+domain <- seq(-1, 1, by=0.01)
+pdfun <- dlaplace(domain, 0, 0.2)
+plot(domain, pdfun,
+     type="l",
+     bty="l",
+     col="#990000")
+```
+
+# Cleaning Data
+
+Please load the generated dataset ```local_economic_data.csv```. Inspect the strcuture and summary statistics.
+
+```{r}
+led <- read.csv("local_economic_data.csv",
+                stringsAsFactors =FALSE)
+str(led)
+```
+
+Often, some of your data will be not machine-readable due to input mistakes, omitted observations, format mix-ups, and so on. In this file, we find multiple examples for *dirty* data, which we will sometimes be able to clean up.
+
+First, please inspect the location parameters. Do you notice something odd?
+
+```{r}
+led$Location
+```
+Now please inspect the *Type* variable. You will find that apparently, data input mistakes where made in only one sector by spelling errors. Try and repair the data manually.
+
+```{r}
+led$Type
+led$Type2 <- led$Type
+led$Type2[c(4,8)] <- "Food"
+led$Type2
+```
+
+Assign all 'valid' industry values to a vector ```industries```. Knowing that only food industry observations where messed up in the process, find all observations where ```Type``` is not a valid industry name, and put "Food" in there instead.
+
+```{r}
+industries <- c("Manufacturing", "Hotel", "Food", "Retail", "Transport", "Medical")
+led$Type3 <- led$Type
+led$Type3[!led$Type %in% industries] <- "Food"
+led$Type3
+```
+
+# grep() and gsub()
+
+Please inspect the "Income" column if the data. You will find that in some cases there is no 1000-separator, in some cases it is a comma and sometimes a colon. In some cases, a dollar sign precedes the number, in some it does not. 
+
+```{r}
+led$Income
+```
+
+```grep()``` allows you to find entries of lists that contain a certain string. You can also use R's expressions to combine within ```grep()```. As an example, use ```grep()``` to find all elements of ```led``` where the owners name includes the letter o.
+
+```{r}
+grep("o", led$Owner)
+```
+
+Now use expressions to find all entries where the owners name includes the letter o, but not the letter a.
+
+```{r}
+grep("o[^a]", led$Owner)
+```
+
+Now find all elements where the Income observation includes anything but numbers from 0 to 9. Print these income observations.
+
+```{r}
+led$Income[grep("[^0-9]", led$Income)]
+```
+
+```gsub()``` allows you to find observations in the same way ```grep``` does, and also replace them with something else. Use ```grep()``` to identify and ```gsub()``` to eliminate all non-numerical values in any income observation.
+
+```{r}
+led$Income[grep("[^0-9]", led$Income)] <- gsub("[^0-9]", "", led$Income)
+led[[6]][grep("[^0-9]", led[[6]])] <- gsub("[^0-9]", "", led[[6]])
+led$Income
+```
+
+# Specializing with user-defined functions
+
+Now please write a function that allows you to apply the operation above to any column of any dataframe you choose as an input. Choose a unique and informative name.
+
+```{r}
+led[[5]]
+led[[5]] <- gsub("[^0-9]", "", led[[5]])
+
+remove.nonnumericals <- function(data, colnumber){
+  as.numeric(gsub("[^0-9]", "", data[[colnumber]]))
+}
+
+led[[5]] <- remove.nonnumericals(data=led, colnumber=5)
+led[[5]]
+```
+
+# Example: University Journal Expenditures
+
+Please load the attached dataset ```university_jounral_expenditures.csv```. Inspect the structure and try to inspect summary statistics. Find out, how many unique Journals and how many unique Publishers have been observed.
+
+```{r}
+uje <- read.csv("university_journal_expenditures.csv",
+                stringsAsFactors = FALSE)
+str(uje)
+length(unique(uje$Journal.title))
+length(unique(uje$Publisher))
+```
+
+Now, translate all Cost observations into numerics. Note that in the original dataset, a colon separates pounds and pennies. 
+
+```{r}
+uje[[5]] <- remove.nonnumericals(uje, 5)/100
+```
+
+
+Remove all entries of Publishers that have only published one article in the dataset using ```dplyr```. Change the column name for cost to "cost". Find out, how many unique publishers remain, how many articles they published on average, minimum and maximum, and at what cost.
+
+```{r}
+library(magrittr)
+library(dplyr)
+
+uje_temp <- uje %>%
+  mutate(cost = COST.....charged.to.Wellcome..inc.VAT.when.charged.) %>%
+  group_by(Publisher) %>%
+  filter(n()>1)
+
+length(unique(uje_temp$Publisher))
+
+uje_publishers <- uje_temp %>%
+  group_by(Publisher) %>%
+  filter(!is.na(cost)) %>%
+  summarize(article=n(),
+            cost=mean(cost))
+
+summary(uje_publishers)
+```
+
+```{r}
+plot(uje_publishers$cost,
+     uje_publishers$article)
+```
+
+# Loops and alternatives to loops
+
+Most programming languages include *loops* and related functions that repeat some operation until some endpoint is reached, or some condition does no longer apply. The most important of these functions for applied research with R are 
+* if() and ifelse() to check if a condition holds
+* for() to repeat an operation many times
+* while() to repeat an operation many times as long as some condition holds
+
+Two auxiliary techniques necessary to understand loops are *Boolean Variables* (TRUE/FALSE statements) and indexing. Please remember that in R, a Boolean variable is the result of many functions and operators, such as ```==```, ```<=``` and ```is.na()```. Please also remember that an exclamation mark ```!``` reverses any Boolean statement. We read ```!=``` as "is not equal".
+
+```{r}
+x <- 4
+y <- 5
+z <- 4
+x==y; x==z
+```
+
+```{r}
+c1 <- c(x, y, z)
+c2 <- c(y, x, z)
+c3 <- as.factor(c(x, y, z))
+c1 == c2; c1 == c3 
+```
+ Boolean Variables are the essential condition in ```if()``` and ```while``` functions.
+ 
+```{r}
+if(x==z){
+  print("X is equal to z!")
+}
+```
+The ```if()``` function can be followed by an ```else()``` function. There is no alone-standing ```else()``` though.
+
+```{r}
+if(x==y){
+  print("X is equal to y!")
+} else{
+  print("Error! x is not equal to y!")
+}
+```
+
